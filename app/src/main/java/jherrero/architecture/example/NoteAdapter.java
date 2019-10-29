@@ -37,6 +37,12 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteHolder> {
         return notes.size();
     }
 
+
+    // create function to return the array position of the current note
+    public Note getNoteAt(int position) {
+        return notes.get(position); // use this return value to delete from our database based from position
+    }
+
     class NoteHolder extends RecyclerView.ViewHolder {
 
         private TextView textViewTitle;

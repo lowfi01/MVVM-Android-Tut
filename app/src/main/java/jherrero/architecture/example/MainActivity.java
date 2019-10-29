@@ -1,9 +1,11 @@
 package jherrero.architecture.example;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -62,10 +64,10 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         // Implement interaction with data and observe
-        noteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
+        noteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);  // pass fragment here instead of this, use getActivity(), watch video 7
         noteViewModel.getAllNotes().observe(this, new Observer<List<Note>>() {
             @Override
-            public void onChanged(List<Note> notes) {
+            public void onChanged(List<Note> notes) {  // pass fragment with this, as the observered method for the life cycle data
                 // When data is added to LiveData observer will fire this method
                 // used to update recycler view to new data
 
@@ -74,6 +76,37 @@ public class MainActivity extends AppCompatActivity {
                 adapter.setNotes(notes);  // adapter becomes a final variable
             }
         });
+
+
+        /*
+        * Implement Swipe on delete
+        *  - Use helper class to implement feature
+        *
+        * */
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
+                0, // drag and drop
+              ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT  // support both swipe directions
+        ) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+
+                // drag and drop functionality
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+                int notePosition = viewHolder.getAdapterPosition(); // get position of swiped note from recycler view
+                Note note = adapter.getNoteAt(notePosition); // fetch note from recycler view using position
+                noteViewModel.delete(note); // delete note from database
+
+                Toast.makeText(MainActivity.this, "Note deleted!", Toast.LENGTH_SHORT).show();
+            }
+        }).attachToRecyclerView(recyclerView); // attach everything to our recycleer view
+
+
 
     }
 
