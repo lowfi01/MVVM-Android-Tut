@@ -11,6 +11,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -142,6 +145,36 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Note Note Saved", Toast.LENGTH_SHORT).show();
 
 
+        }
+
+
+    }
+
+
+    // Implement options menu for all delete notes action
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        // generate custom menu we created
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.main_menu, menu);
+
+        return true; // allows for custom menu
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        // setup on on delete all notes menu item
+        switch(item.getItemId()){
+            case R.id.delete_all_notes:
+                noteViewModel.deleteAllNotes();
+                Toast.makeText(this, "All notes deleted", Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
 
 
