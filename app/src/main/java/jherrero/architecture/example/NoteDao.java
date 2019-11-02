@@ -10,7 +10,6 @@ import androidx.room.Update;
 
 import java.util.List;
 
-
 // General rule it's better to create one dao per entity.
 
 @Dao

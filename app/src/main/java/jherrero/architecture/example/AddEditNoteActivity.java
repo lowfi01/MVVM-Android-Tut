@@ -12,13 +12,15 @@ import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.Toast;
 
-public class AddNote extends AppCompatActivity {
+public class AddEditNoteActivity extends AppCompatActivity {
     public static final String EXTRA_TITLE =
             "jherrero.architecture.example.EXTRA_TITLE";
     public static final String EXTRA_DESCRIPTION =
             "jherrero.architecture.example.EXTRA_DESCRIPTION";
     public static final String EXTRA_PRIORITY =
             "jherrero.architecture.example.EXTRA_PRIORITY";
+    public static final String EXTRA_ID =
+            "jherrero.architecture.example.EXTRA_ID";
 
 
     private EditText editTextTitle;
@@ -43,8 +45,22 @@ public class AddNote extends AppCompatActivity {
         // setup close icon to our action bar
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close);
 
-        // Set title to action bar for our add notes activity
-        setTitle("Add Note");
+
+        /*
+        * Form can be used to create or edit Notes
+        * */
+        Intent intent = getIntent();
+        if (intent.hasExtra(EXTRA_ID)) {
+            setTitle("Edit Note"); // Set title to action bar for our edit notes activity
+            editTextTitle.setText(intent.getStringExtra(EXTRA_TITLE));
+            editTextDescription.setText(intent.getStringExtra(EXTRA_DESCRIPTION));
+            numberPickerPriority.setValue(intent.getIntExtra(EXTRA_PRIORITY, 1)); // Primitive types require a default value
+        } else {
+            setTitle("Add Note"); // Set title to action bar for our add notes activity
+        }
+
+
+
     }
 
 
@@ -69,6 +85,16 @@ public class AddNote extends AppCompatActivity {
         data.putExtra(EXTRA_TITLE, title);
         data.putExtra(EXTRA_DESCRIPTION, description);
         data.putExtra(EXTRA_PRIORITY, priority);
+
+        /*
+        * Implement logic for Edit Note
+        *
+        * Logic will only add id to Intent data if we are editing a note
+        * */
+        int id = getIntent().getIntExtra(EXTRA_ID, -1); // default value -1 to prevent unwanted data being updated
+        if (id != -1) {
+            data.putExtra(EXTRA_ID, id);
+        }
 
         setResult(RESULT_OK, data);
         finish();

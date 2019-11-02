@@ -23,6 +23,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final int ADD_NOTE_REQUEST = 1;
+    public static final int EDIT_NOTE_REQUEST = 2;
 
 
     private NoteViewModel noteViewModel;
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // do not use intents when setting up normally
-                Intent intent = new Intent(MainActivity.this, AddNote.class);
+                Intent intent = new Intent(MainActivity.this, AddEditNoteActivity.class);
                 startActivityForResult(intent, ADD_NOTE_REQUEST); // send intent & wait
 
             }
@@ -110,6 +111,25 @@ public class MainActivity extends AppCompatActivity {
         }).attachToRecyclerView(recyclerView); // attach everything to our recycleer view
 
 
+        /*
+        * Implement onClickListener interaction for Recycler view items
+        * Begin edit item
+        * */
+
+        // Catch callback & implement on item clicked lister found within our recycler view
+        adapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() { // pass annoymouse  function to implement callback
+            @Override
+            public void onItemClicked(Note note) {
+                // Handle click event here, which is actioned within our recycler view.
+                Intent intent = new Intent(MainActivity.this, AddEditNoteActivity.class);   // reuse, addNote activity for editing notes
+                intent.putExtra(AddEditNoteActivity.EXTRA_TITLE, note.getTitle());
+                intent.putExtra(AddEditNoteActivity.EXTRA_PRIORITY, note.getPriority());
+                intent.putExtra(AddEditNoteActivity.EXTRA_DESCRIPTION, note.getDescription());
+                intent.putExtra(AddEditNoteActivity.EXTRA_ID, note.getId());
+                startActivityForResult(intent, EDIT_NOTE_REQUEST);
+            }
+        });
+
 
     }
 
@@ -120,9 +140,9 @@ public class MainActivity extends AppCompatActivity {
 
         // form data sent successfully
         if (requestCode == ADD_NOTE_REQUEST && resultCode == RESULT_OK) {
-            String title = data.getStringExtra(AddNote.EXTRA_TITLE);
-            String description = data.getStringExtra(AddNote.EXTRA_DESCRIPTION);
-            int priority = data.getIntExtra(AddNote.EXTRA_PRIORITY, 1); // default value is to prevent null
+            String title = data.getStringExtra(AddEditNoteActivity.EXTRA_TITLE);
+            String description = data.getStringExtra(AddEditNoteActivity.EXTRA_DESCRIPTION);
+            int priority = data.getIntExtra(AddEditNoteActivity.EXTRA_PRIORITY, 1); // default value is to prevent null
 
 
             // create new note with intent data from form submission
@@ -133,6 +153,25 @@ public class MainActivity extends AppCompatActivity {
             noteViewModel.insert(note);
 
             Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
+        } else if (requestCode == EDIT_NOTE_REQUEST && resultCode == RESULT_OK) {
+            // Implement logic for acting Edit note data
+
+            int id = data.getIntExtra(AddEditNoteActivity.EXTRA_ID, -1); // -1 should not exist within our database
+            if(id == -1){
+                Toast.makeText(this, "Note can't be updated", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String title = data.getStringExtra(AddEditNoteActivity.EXTRA_TITLE);
+            String description = data.getStringExtra(AddEditNoteActivity.EXTRA_DESCRIPTION);
+            int priority = data.getIntExtra(AddEditNoteActivity.EXTRA_PRIORITY, 1); // default value is to prevent null
+
+            Note note = new Note(title, description, priority);
+            note.setId(id);  // Room requires primary key to update
+
+            noteViewModel.update(note);
+            Toast.makeText(this, "Note updated", Toast.LENGTH_SHORT).show();
+
         } else {
             // User has not saved the form, rather they have hit back button
             // Note - this will not normally happen if you are using view model correctly
@@ -140,13 +179,8 @@ public class MainActivity extends AppCompatActivity {
 
 
             // note - RESULT_CANCELED is the resultCode send back
-
-
-            Toast.makeText(this, "Note Note Saved", Toast.LENGTH_SHORT).show();
-
-
+            Toast.makeText(this, "Note not saved", Toast.LENGTH_SHORT).show();
         }
-
 
     }
 
